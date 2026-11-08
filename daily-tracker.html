@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily Tracker</title>
+<style>
+:root{--bg:#eef2f4;--card:#fff;--ink:#1b2b34;--mute:#52626b;--line:#d5dde1;--acc:#1f7a6d;--acc2:#e4f2ef;--warn:#c98a1b;--lo:#e3e9ec;--g1:#d2f0e8;--g2:#d9e6fb;--g3:#eddcf7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a1f;--card:#1a252b;--ink:#e6eef1;--mute:#a6b6c0;--line:#2b3a42;--acc:#3fb5a3;--acc2:#1c3a37;--warn:#e0a63a;--lo:#26343b;--g1:#0c2a2e;--g2:#131b3a;--g3:#2a1741;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a1f;--card:#1a252b;--ink:#e6eef1;--mute:#a6b6c0;--line:#2b3a42;--acc:#3fb5a3;--acc2:#1c3a37;--warn:#e0a63a;--lo:#26343b;--g1:#0c2a2e;--g2:#131b3a;--g3:#2a1741;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;background:var(--bg);background-image:linear-gradient(145deg,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px 14px 48px}
+h1{font:700 26px/1.2 Georgia,"Times New Roman",serif;margin:8px 0 2px}
+h2{font:600 16px/1.3 Georgia,serif;margin:0 0 10px}
+.sub{color:var(--mute);margin:0 0 14px}
+nav{display:flex;gap:6px;background:var(--lo);padding:4px;border-radius:12px;margin-bottom:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:1 0 auto;white-space:nowrap;border:0;background:none;color:var(--mute);padding:9px 12px;border-radius:9px;font:600 14px inherit;font-family:inherit;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(20,60,70,.10)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bar{height:8px;background:var(--lo);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:6px;transition:width .25s}
+.score{font:700 40px/1 Georgia,serif;color:var(--acc)}
+.prayers{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.pr{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 2px;font:600 13px inherit;font-family:inherit;cursor:pointer}
+.pr[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button,.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;min-width:40px;height:40px;font:600 18px inherit;font-family:inherit;cursor:pointer;padding:0 12px}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-size:15px}
+.btn.small{height:32px;font-size:13px;min-width:0}
+.val{font-weight:700;min-width:70px;text-align:center}
+.chk{width:30px;height:30px;accent-color:var(--acc)}
+input[type=text],input[type=number],select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form .full{grid-column:1/-1}
+.mute{color:var(--mute);font-size:14px}
+.chart{display:flex;align-items:flex-end;gap:4px;height:130px;padding-top:6px}
+.chart div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}
+.chart b{width:100%;max-width:34px;background:var(--acc);border-radius:5px 5px 0 0;min-height:3px}
+.chart b.z{background:var(--lo)}
+.chart span{font-size:11px;color:var(--mute);margin-top:4px;white-space:nowrap}
+.heat{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
+.heat i{aspect-ratio:1;border-radius:3px;background:var(--lo)}
+.sum{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}
+.sum:first-of-type{border-top:0}
+details{border-top:1px solid var(--line);padding:8px 0}
+summary{cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.pill{font-weight:700;color:var(--acc)}
+.manage{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.manage input{width:78px}
+textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%;resize:vertical}
+.todo{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.todo span.t{flex:1;word-break:break-word}
+.todo.done span.t{text-decoration:line-through;color:var(--mute)}
+.hi{font-size:12px;font-weight:700;color:var(--warn);border:1px solid var(--warn);border-radius:6px;padding:0 6px}
+.addrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.addrow select{grid-column:1;width:auto}
+.toprow{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start;margin-bottom:12px}
+.tl{display:flex;flex-direction:column;gap:12px}
+#view .toprow .card,.toprow .card{margin-bottom:0}
+.toprow .recs{grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px}
+.toprow .rec{padding:8px}
+.toprow .rec b{font-size:18px}
+@media (min-width:640px){.toprow{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}}
+.layout{display:grid;grid-template-columns:116px minmax(0,1fr);gap:10px;align-items:start}
+.menu{display:flex;flex-direction:column;gap:4px;position:sticky;top:58px}
+.mi{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:1px;border:0;border-left:3px solid transparent;background:none;color:var(--ink);padding:8px 8px;border-radius:9px;font-family:inherit;font-size:13px;font-weight:600;line-height:1.25;cursor:pointer;width:100%}
+.mi .mp{font-size:11px;font-weight:600;color:var(--mute)}
+.mi:hover{background:var(--lo)}
+.mi[aria-selected="true"]{background:var(--card);border-left-color:var(--acc);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#view .panel .card{margin-bottom:0}
+.panel .prayers{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}
+@media (min-width:860px){
+main{padding:28px 32px 64px}
+h1{font-size:34px}
+nav{max-width:none}
+.layout{grid-template-columns:210px minmax(0,1fr);gap:20px}
+.menu{top:72px}
+.mi{font-size:14px;padding:10px 12px}
+.mi .mp{font-size:12px}
+nav button{font-size:15px;padding:11px 16px}
+#view{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+#view .card{padding:20px;margin-bottom:20px;border-radius:16px}
+#view>.top,#view>.layout{grid-column:1/-1}
+#view>.top{margin-bottom:0}
+.chart{height:190px}
+.heat{grid-template-columns:repeat(30,1fr)}
+.btn:hover,.pr:hover,.stepper button:hover{border-color:var(--acc)}
+}
+@media (min-width:1400px){
+main{max-width:1200px}
+}
+.exrow{display:grid;grid-template-columns:1fr 96px;gap:4px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.exrow input{padding:7px 8px}
+.exrow .exst{grid-column:1/-1;font-size:13px;color:var(--mute)}
+.exrow.ok .exst{color:var(--acc);font-weight:700}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:6px}
+.amts label{display:flex;flex-direction:column;gap:4px;margin:0}
+.recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.rec{background:var(--lo);border-radius:12px;padding:10px}
+.rec b{display:block;font:700 22px/1.2 Georgia,serif;color:var(--acc)}
+.sched{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--line)}
+.sched b{flex:1;min-width:120px}
+input[type=time]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px}
+.alarmBox{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:50;display:flex;flex-direction:column;gap:8px;max-width:520px;margin:0 auto}
+.alarm{background:var(--card);color:var(--ink);border:2px solid var(--acc);border-radius:14px;padding:12px 14px;box-shadow:0 6px 24px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:space-between;gap:10px;animation:ring .5s ease-in-out infinite alternate}
+@keyframes ring{from{transform:translateX(-2px)}to{transform:translateX(2px)}}
+.alarm b{font-size:20px}
+.alarmBox.on{left:0;right:0;top:0;bottom:0;max-width:none;margin:0;padding:20px;justify-content:center;align-items:center;background:rgba(0,0,0,.6)}
+.alarmBox.on .alarm{width:min(100%,420px);flex-direction:column;align-items:stretch;text-align:center;padding:24px}
+.alarmBox.on .alarm b{font-size:24px}
+.alarmBox.on .btn{height:50px;font-size:18px}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}.alarm{animation:none}}
+/* ===== Extra background colors for everything ===== */
+:root{--c1:#dcf4ec;--c2:#dfeafd;--c3:#f1e3fb;--c4:#fdeed2;--c5:#fde0e6;--inp:#fffdf0;--navbg:#c5e6df;--stripe:rgba(255,255,255,.5)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c1:#12393a;--c2:#172646;--c3:#2f1d47;--c4:#3a2c14;--c5:#3d1a26;--inp:#22313a;--navbg:#1d3a3c;--stripe:rgba(255,255,255,.06)}}
+:root[data-theme="dark"]{--c1:#12393a;--c2:#172646;--c3:#2f1d47;--c4:#3a2c14;--c5:#3d1a26;--inp:#22313a;--navbg:#1d3a3c;--stripe:rgba(255,255,255,.06)}
+html{background:var(--bg)}
+nav{background:var(--navbg)}
+nav button:nth-child(5n+1){background:var(--c1)}
+nav button:nth-child(5n+2){background:var(--c2)}
+nav button:nth-child(5n+3){background:var(--c3)}
+nav button:nth-child(5n+4){background:var(--c4)}
+nav button:nth-child(5n+5){background:var(--c5)}
+nav button[aria-selected="true"]{background:var(--acc);color:#fff}
+.card:nth-child(5n+1){background:var(--c1)}
+.card:nth-child(5n+2){background:var(--c2)}
+.card:nth-child(5n+3){background:var(--c3)}
+.card:nth-child(5n+4){background:var(--c4)}
+.card:nth-child(5n+5){background:var(--c5)}
+.mi:nth-child(5n+1){background:var(--c1)}
+.mi:nth-child(5n+2){background:var(--c2)}
+.mi:nth-child(5n+3){background:var(--c3)}
+.mi:nth-child(5n+4){background:var(--c4)}
+.mi:nth-child(5n+5){background:var(--c5)}
+.mi[aria-selected="true"]{background:var(--acc);color:#fff;border-left-color:var(--warn)}
+.mi[aria-selected="true"] .mp{color:#e8fff9}
+.pr{background:var(--c2)}
+.stepper button,.btn{background:var(--c3)}
+input[type=text],input[type=number],input[type=time],select,textarea{background:var(--inp)}
+.rec:nth-child(4n+1){background:var(--c1)}
+.rec:nth-child(4n+2){background:var(--c2)}
+.rec:nth-child(4n+3){background:var(--c4)}
+.rec:nth-child(4n+4){background:var(--c5)}
+.todo:nth-child(even),.manage:nth-child(even),.sched:nth-child(even),.exrow:nth-child(even),.sum:nth-child(even){background:var(--stripe);padding-left:8px;padding-right:8px;border-radius:8px}
+details{background:var(--stripe);padding:8px 10px;border-radius:10px;margin-top:6px;border-top:0}
+.alarm{background:var(--c4)}
+/* ===== Always dark ===== */
+:root,:root[data-theme="light"],:root[data-theme="dark"]{--bg:#0d1418;--card:#18232a;--ink:#e6eef1;--mute:#a6b6c0;--line:#2b3a42;--acc:#3fb5a3;--acc2:#1c3a37;--warn:#e0a63a;--lo:#23323a;--g1:#0a2326;--g2:#0e1631;--g3:#22123a;--c1:#12393a;--c2:#172646;--c3:#2f1d47;--c4:#3a2c14;--c5:#3d1a26;--inp:#202f38;--navbg:#16302f;--stripe:rgba(255,255,255,.06);color-scheme:dark}
+.alarmBox.on{background:rgba(0,0,0,.8)}
+</style>
+</head>
+<body>
+<div class="alarmBox" id="alarmBox" aria-live="assertive"></div>
+<main>
+  <h1>Daily Tracker</h1>
+  <p class="sub" id="dateLine"></p>
+  <nav role="tablist" id="tabs"></nav>
+  <section id="view"></section>
+</main>
+<script>
+(function(){
+var KEY='daily_tracker_v1', KEEP=365, BK_KEY='daily_tracker_lastbackup';
+var PRAYERS=['Fajr','Zuhr','Asr','Maghrib','Isha'];
+var EXERCISES=['Squats','Push-ups','Plank','Lunges','Breathing & Stretching'];
+var EX_UNITS=['reps','reps','sec','reps','min'];
+var EX_TARGETS=[50,35,60,50,5]; /* daily goals: squats, push-ups, plank (sec), lunges, breathing & stretching (min) */
+function goalText(i){return EX_TARGETS[i]+' '+EX_UNITS[i]+(EX_UNITS[i]==='sec'&&EX_TARGETS[i]%60===0?' ('+(EX_TARGETS[i]/60)+' min)':'')}
+var DEFAULT_TASKS=[
+  {id:'prayer',name:'Prayers',type:'prayer',target:5},
+  {id:'coding',name:'Coding',type:'split',target:5},
+  {id:'english',name:'English study',type:'split',target:2},
+  {id:'malay',name:'Malay language',type:'split',target:2},
+  {id:'exercise',name:'Exercise',type:'exercise',target:5},
+  {id:'cyber',name:'Cybersecurity',type:'cyber',target:3},
+  {id:'sleep',name:'Sleep',type:'sleep',target:6.5}
+];
+var DEFAULT_SCHED={
+  p0:{s:'05:20'},p1:{s:'13:30'},p2:{s:'15:30'},p3:{s:'17:10'},p4:{s:'19:45'},
+  exercise:{s:'05:30',e:'06:00'},english:{s:'06:00',e:'08:00'},coding:{s:'08:30',e:'13:30'},
+  cyber:{s:'16:00',e:'17:00'},malay:{s:'17:30',e:'19:30'},sleep:{s:'22:45',e:'05:15'}
+};
+var state={tasks:DEFAULT_TASKS.slice(),logs:{},course:{day:1,phase:1},reviews:{},cyAdded:true,msAdded:true,slAdded:true,sched:{},schedInit:false}, tab='today';
+var CY_PHASES=['1: Computer Fundamentals','2: Networking','3: Linux','4: Programming','5: Security Foundation','6: Ethical Hacking Method','7: Web Security','8: Security Tools (legal labs)','9: Practical Training','10: Career Prep'];
+
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var s=JSON.parse(raw);if(s&&Array.isArray(s.tasks)&&s.logs){state=s;state.tasks.forEach(function(t){if(t.id==='exercise'&&t.type==='check'){t.type='exercise';t.target=5}if(SPLITS[t.id]&&(t.type==='hours'||t.type==='coding'||t.type==='split')){t.type='split';t.target=SPLITS[t.id].goals.reduce(function(a,b){return a+b},0)}})}}}catch(e){}
+  ensureState();
+  prune();
+}
+function ensureState(){
+  if(!state.course||typeof state.course!=='object')state.course={day:1,phase:1};
+  if(!state.reviews||typeof state.reviews!=='object')state.reviews={};
+  if(!state.cyAdded){
+    if(!state.tasks.some(function(t){return t.type==='cyber'}))state.tasks.push({id:'cyber',name:'Cybersecurity',type:'cyber',target:3,since:today()});
+    state.cyAdded=true;
+  }
+  if(!state.msAdded){
+    if(!state.tasks.some(function(t){return t.id==='malay'})){
+      var ei=-1;state.tasks.forEach(function(t,i){if(t.id==='english')ei=i});
+      state.tasks.splice(ei>=0?ei+1:state.tasks.length,0,{id:'malay',name:'Malay language',type:'split',target:2,since:today()});
+    }
+    state.msAdded=true;
+  }
+  if(!state.slAdded){
+    if(!state.tasks.some(function(t){return t.type==='sleep'}))state.tasks.push({id:'sleep',name:'Sleep',type:'sleep',target:6.5,since:today()});
+    state.slAdded=true;
+  }
+  if(!state.sched||typeof state.sched!=='object')state.sched={};
+  if(!state.schedInit){
+    Object.keys(DEFAULT_SCHED).forEach(function(k){if(!state.sched[k])state.sched[k]={s:DEFAULT_SCHED[k].s,e:DEFAULT_SCHED[k].e}});
+    state.schedInit=true;
+  }
+  if(!state.prayerAuto||typeof state.prayerAuto!=='object'||!Array.isArray(state.prayerAuto.off)){
+    var off=[0,0,0,0,0],bm=prayerMins();
+    [0,1].forEach(function(i){var r=state.sched['p'+i],m=r?tmin(r.s):null;if(m!==null)off[i]=Math.max(0,Math.min(300,m-bm[i]))});
+    state.prayerAuto={on:true,off:off};
+  }
+  if(!state.alarm||typeof state.alarm!=='object')state.alarm={on:true};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function pad(n){return n<10?'0'+n:''+n}
+function keyOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function daysAgo(n){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-n);return d}
+function today(){return keyOf(new Date())}
+function prune(){
+  var cutoff=keyOf(daysAgo(KEEP-1));
+  Object.keys(state.logs).forEach(function(k){if(k<cutoff)delete state.logs[k]});
+  save();
+}
+var SPLITS={
+  coding:{key:'_cd',names:['Practice','Thinking','Learning'],goals:[2,0.5,2.5]},
+  english:{key:'_en',names:['Reading & Vocabulary','Speaking','Writing'],goals:[0.5,1,0.5]},
+  malay:{key:'_ms',names:['Reading & Vocabulary','Speaking','Writing'],goals:[0.5,1,0.5]}
+};
+function fmtH(h){var m=Math.round(h*60);if(m<60)return m+' min';var hh=Math.floor(m/60),mm=m%60;return hh+' h'+(mm?' '+mm+' min':'')}
+function hms(ms){var x=Math.max(0,Math.floor(ms/1000)),h=Math.floor(x/3600),m=Math.floor(x%3600/60);return pad(h)+':'+pad(m)+':'+pad(x%60)}
+function stopTimer(){
+  var tm=state.timer,sp=tm&&SPLITS[tm.id];
+  state.timer=null;
+  if(!sp)return;
+  var hrs=Math.min(12,(Date.now()-tm.t0)/3600000);
+  if(hrs<1/720)return;
+  var a=cdParts(tm.day,{id:tm.id});
+  a[tm.i]=Math.min(24,Math.round((a[tm.i]+hrs)*10000)/10000);
+  getLog(tm.day)[sp.key]=a;
+}
+function startTimer(id,i){stopTimer();state.timer={id:id,i:i,t0:Date.now(),day:today()};rerender()}
+function timerBtn(id,i){
+  var tm=state.timer;
+  if(tm&&tm.id===id&&tm.i===i){
+    return el('button',{class:'btn small primary','data-t0':String(tm.t0),text:'\u25A0 Stop '+hms(Date.now()-tm.t0),onclick:function(){stopTimer();rerender()}});
+  }
+  return el('button',{class:'btn small',text:'\u25B6 Start timer','aria-label':'Start timer',onclick:function(){startTimer(id,i)}});
+}
+function cdParts(k,t){
+  var sp=SPLITS[t.id],l=state.logs[k]||{},a=l[sp.key];
+  if(Array.isArray(a))return [Number(a[0])||0,Number(a[1])||0,Number(a[2])||0];
+  return [Number(l[t.id])||0,0,0];
+}
+function getLog(k){return state.logs[k]||(state.logs[k]={})}
+function val(k,t){
+  var l=(state.logs[k]||{})[t.id];
+  if(t.type==='prayer'){return Array.isArray(l)?l.filter(Boolean).length:0}
+  if(t.type==='exercise'){
+    var ex=(state.logs[k]||{})._ex||[],c=0;
+    EX_TARGETS.forEach(function(g,i){if(Number(ex[i])>=g)c++});
+    return c;
+  }
+  if(t.type==='cyber'){var cy=(state.logs[k]||{})._cy||[],cn=0;for(var j=0;j<3;j++)if(cy[j])cn++;return cn}
+  if(t.type==='split'){var sp=SPLITS[t.id],cd=cdParts(k,t),s=0;sp.goals.forEach(function(g,i){s+=Math.min(cd[i],g)});return s}
+  return Number(l)||0;
+}
+function pct(k,t){
+  var v=val(k,t);
+  if(t.type==='check')return v?1:0;
+  return Math.min(1,v/(t.target||1));
+}
+function dayScore(k){
+  if(!state.tasks.length)return 0;
+  var s=0,n=0;state.tasks.forEach(function(t){if(t.since&&k<t.since)return;s+=pct(k,t);n++});
+  return n?s/n:0;
+}
+function el(tag,attrs,kids){
+  var e=document.createElement(tag);
+  if(attrs)Object.keys(attrs).forEach(function(a){
+    if(a==='class')e.className=attrs[a];
+    else if(a==='text')e.textContent=attrs[a];
+    else if(a.indexOf('on')===0)e.addEventListener(a.slice(2),attrs[a]);
+    else e.setAttribute(a,attrs[a]);
+  });
+  (kids||[]).forEach(function(c){if(c)e.appendChild(c)});
+  return e;
+}
+function fmtVal(t,v){
+  if(t.type==='prayer'||t.type==='exercise')return v+' / 5';
+  if(t.type==='cyber')return v+' / 3';
+  if(t.type==='sleep')return fmtH(v)+' of '+fmtH(t.target);
+  if(t.type==='split')return fmtH(v)+' of '+fmtH(t.target);
+  if(t.type==='check')return v?'Done':'Not yet';
+  return (Math.round(v*100)/100)+' h of '+t.target+' h';
+}
+function rerender(){save();render()}
+
+/* ---------- Left menu: only the chosen section is shown ---------- */
+var SEL_KEY='daily_tracker_sel_v1', selSec='';
+try{selSec=localStorage.getItem(SEL_KEY)||''}catch(e){}
+var MENU_TITLE={todo:'To-do',carry:'Unfinished',note:'Note',add:'Add task',manage:'Manage',backup:'Backup',schedule:'Schedule'};
+var MENU_RANK={todo:1,carry:2,note:3,add:4,manage:5,backup:6,schedule:0.5};
+function sidebarify(root){
+  var cards=Array.prototype.slice.call(root.children).filter(function(c){return c.hasAttribute('data-sec')&&!HEADER_SECS[c.getAttribute('data-sec')]});
+  if(!cards.length)return;
+  var items=cards.map(function(c,i){
+    var id=c.getAttribute('data-sec');
+    return {id:id,card:c,i:i,rank:id.indexOf('t_')===0?0:(MENU_RANK[id]||9)};
+  }).sort(function(a,b){return (a.rank-b.rank)||(a.i-b.i)});
+  if(!items.some(function(x){return x.id===selSec}))selSec=items[0].id;
+  var menu=el('div',{class:'menu',role:'tablist','aria-label':'Sections'});
+  var panel=el('div',{class:'panel',role:'tabpanel'});
+  items.forEach(function(x){
+    var h=x.card.querySelector('h2'),pl=x.card.querySelector('.pill');
+    var kids=[el('span',{class:'mt',text:MENU_TITLE[x.id]||(h?h.textContent:x.id)})];
+    if(pl)kids.push(el('span',{class:'mp',text:pl.textContent}));
+    menu.appendChild(el('button',{class:'mi',role:'tab','aria-selected':x.id===selSec?'true':'false',onclick:function(){
+      selSec=x.id;try{localStorage.setItem(SEL_KEY,x.id)}catch(e){}
+      render();
+    }},kids));
+    if(x.id===selSec)panel.appendChild(x.card);
+  });
+  var tops=Array.prototype.slice.call(root.children).filter(function(c){return !c.hasAttribute('data-sec')});
+  root.textContent='';
+  tops.forEach(function(c){root.appendChild(c)});
+  root.appendChild(el('div',{class:'layout'},[menu,panel]));
+}
+
+/* ---------- Today ---------- */
+function viewToday(root){
+  var k=today(), sc=Math.round(dayScore(k)*100);
+  var top=el('div',{class:'card top'},[
+    el('div',{class:'row'},[
+      el('div',null,[el('div',{class:'mute',text:'Today\'s progress'}),el('div',{class:'score',text:sc+'%'})]),
+      el('div',{class:'mute',text:state.tasks.length+' tasks'})
+    ]),
+    el('div',{class:'bar'},[el('i',{style:'width:'+sc+'%'})]),
+    nextUp()?el('div',{class:'mute',style:'margin-top:8px',text:nextUp()}):null
+  ]);
+  var bc=bestCard(k);
+  var left=el('div',{class:'tl'},[top,splitCard(k),bestDayCard(k)]);
+  root.appendChild(el('div',{class:'toprow top'},bc?[left,bc]:[left]));
+  todoCard(root,k);
+
+  state.tasks.forEach(function(t){
+    var card=el('div',{class:'card','data-sec':'t_'+t.id});
+    var v=val(k,t);
+    card.appendChild(el('div',{class:'row'},[
+      el('h2',{text:t.name,style:'margin:0'}),
+      el('span',{class:'pill',text:fmtVal(t,v)})
+    ]));
+    var tt=timeText(t.id);if(tt)card.appendChild(el('div',{class:'mute',style:'margin-top:2px',text:'Time: '+tt}));
+    if(t.type==='prayer'){
+      var raw=getLog(k)[t.id];
+      var arr=Array.isArray(raw)?raw.slice():[0,0,0,0,0];
+      var g=el('div',{class:'prayers'});
+      PRAYERS.forEach(function(n,i){
+        g.appendChild(el('button',{class:'pr','aria-pressed':arr[i]?'true':'false',onclick:function(){
+          arr[i]=arr[i]?0:1;getLog(k)[t.id]=arr;rerender();
+        }},[el('span',{text:n}),el('span',{text:fmtT(getSched('p'+i).s||''),style:'display:block;font-weight:400;font-size:11px;opacity:.85'})]));
+      });
+      card.appendChild(g);
+    }else if(t.type==='exercise'){
+      var ex=getLog(k)._ex||[0,0,0,0,0];
+      card.appendChild(el('p',{class:'mute',style:'margin:8px 0 4px',text:'Type how much you did. An exercise counts as complete only when you reach its goal.'}));
+      EXERCISES.forEach(function(n,i){
+        var goal=EX_TARGETS[i], cur=Number(ex[i])||0, done=cur>=goal;
+        var inp=el('input',{type:'number',min:'0',max:'9999',step:'1',inputmode:'numeric',placeholder:'0','aria-label':n+' ('+EX_UNITS[i]+') today'});
+        inp.value=cur||'';
+        inp.addEventListener('change',function(){
+          var v=Math.max(0,Math.min(9999,Math.floor(Number(inp.value)||0)));
+          var a=(getLog(k)._ex||[0,0,0,0,0]).slice();a[i]=v;getLog(k)._ex=a;rerender();
+        });
+        var status=done?(cur>goal?'Done, '+(cur-goal)+' '+EX_UNITS[i]+' extra':'Done'):(cur>0?'Not complete ('+cur+' of '+goal+')':'Not done yet');
+        card.appendChild(el('div',{class:'exrow'+(done?' ok':'')},[
+          el('div',null,[el('b',{text:n}),el('div',{class:'mute',text:'Goal: '+goalText(i)})]),
+          inp,
+          el('span',{class:'exst',text:(done?'\u2713 ':'')+status})
+        ]));
+      });
+    }else if(t.type==='sleep'){
+      var sl=Number(getLog(k)[t.id])||0;
+      var sin=el('input',{type:'number',min:'0',max:'24',step:'0.25',inputmode:'decimal',placeholder:'e.g. 6.5','aria-label':'Hours slept'});
+      sin.value=sl||'';
+      sin.addEventListener('change',function(){var x=Math.max(0,Math.min(24,Number(sin.value)||0));getLog(k)[t.id]=Math.round(x*100)/100;rerender()});
+      card.appendChild(el('p',{class:'mute',style:'margin:8px 0 6px',text:'Goal: '+fmtH(t.target)+'. Type the hours you slept (6.5 means 6 h 30 min).'}));
+      var slst=sl>=t.target?('\u2713 Goal reached'+(sl>t.target?', '+fmtH(sl-t.target)+' extra':'')):(sl>0?'Not enough yet ('+fmtH(sl)+' of '+fmtH(t.target)+')':'Not logged yet');
+      card.appendChild(el('div',{class:'exrow'+(sl>=t.target?' ok':'')},[el('b',{text:'Hours slept'}),sin,el('span',{class:'exst',text:slst})]));
+    }else if(t.type==='cyber'){
+      var cyl=(getLog(k)._cy||[0,0,0]).slice(),cr=state.course;
+      card.appendChild(el('div',{class:'stepper',style:'margin:10px 0 6px'},[
+        el('button',{'aria-label':'Previous course day',text:'\u2212',onclick:function(){cr.day=Math.max(1,cr.day-1);rerender()}}),
+        el('span',{class:'val',style:'min-width:110px',text:'Course day '+cr.day}),
+        el('button',{'aria-label':'Next course day',text:'+',onclick:function(){cr.day=Math.min(999,cr.day+1);rerender()}})
+      ]));
+      var ps=el('select',{'aria-label':'Course phase',style:'margin-bottom:6px'});
+      CY_PHASES.forEach(function(n,i){var o=el('option',{value:String(i+1),text:'Phase '+n});if(cr.phase===i+1)o.selected=true;ps.appendChild(o)});
+      ps.addEventListener('change',function(){cr.phase=Number(ps.value)||1;rerender()});
+      card.appendChild(ps);
+      ['Lesson done','Homework done','Quiz done'].forEach(function(n,i){
+        var cbx=el('input',{type:'checkbox',class:'chk','aria-label':n});
+        cbx.checked=!!cyl[i];
+        cbx.addEventListener('change',function(){var a=(getLog(k)._cy||[0,0,0]).slice();a[i]=cbx.checked?1:0;getLog(k)._cy=a;rerender()});
+        card.appendChild(el('div',{class:'todo'+(cyl[i]?' done':'')},[cbx,el('span',{class:'t',text:n})]));
+      });
+      card.appendChild(el('p',{class:'mute',text:'When all 3 are done, tap + to go to the next course day.'}));
+    }else if(t.type==='split'){
+      var sp=SPLITS[t.id],cd=cdParts(k,t);
+      card.appendChild(el('p',{class:'mute',style:'margin:8px 0 4px',text:'Goal: '+fmtH(t.target)+' a day in '+sp.names.length+' parts. Each part counts up to its own goal.'}));
+      sp.names.forEach(function(n,i){
+        var cur=cd[i],goal=sp.goals[i],done=cur>=goal;
+        function setPart(x){var a=cdParts(k,t);a[i]=x;getLog(k)[sp.key]=a;rerender()}
+        var status=done?('\u2713 Done'+(cur>goal?', '+fmtH(cur-goal)+' extra':'')):(cur>0?'Not complete ('+fmtH(cur)+' of '+fmtH(goal)+')':'Not done yet');
+        card.appendChild(el('div',{class:done?'exrow ok':'exrow',style:'grid-template-columns:1fr'},[
+          el('div',{class:'row'},[
+            el('div',null,[el('b',{text:n}),el('div',{class:'mute',text:'Goal: '+fmtH(goal)})]),
+            el('div',{class:'stepper'},[
+              el('button',{'aria-label':'Less '+n,text:'\u2212',onclick:function(){setPart(Math.max(0,cur-0.25))}}),
+              el('span',{class:'val',style:'min-width:62px',text:fmtH(cur)}),
+              el('button',{'aria-label':'More '+n,text:'+',onclick:function(){setPart(Math.min(24,cur+0.25))}})
+            ])
+          ]),
+          el('div',{class:'row'},[el('span',{class:'exst',text:status}),timerBtn(t.id,i)])
+        ]));
+      });
+    }else if(t.type==='hours'){
+      var st=el('div',{class:'stepper',style:'margin-top:10px'},[
+        el('button',{'aria-label':'Less time',text:'\u2212',onclick:function(){getLog(k)[t.id]=Math.max(0,v-0.25);rerender()}}),
+        el('span',{class:'val',text:(Math.round(v*100)/100)+' h'}),
+        el('button',{'aria-label':'More time',text:'+',onclick:function(){getLog(k)[t.id]=Math.min(24,v+0.25);rerender()}}),
+        el('span',{class:'mute',text:'steps of 15 min'})
+      ]);
+      card.appendChild(st);
+    }else{
+      var cb=el('input',{type:'checkbox',class:'chk','aria-label':'Mark '+t.name+' done'});
+      cb.checked=!!v;
+      cb.addEventListener('change',function(){getLog(k)[t.id]=cb.checked?1:0;rerender()});
+      card.appendChild(el('div',{style:'margin-top:10px'},[cb]));
+    }
+    card.appendChild(el('div',{class:'bar'},[el('i',{style:'width:'+Math.round(pct(k,t)*100)+'%'})]));
+    root.appendChild(card);
+  });
+
+  /* add task */
+  var nm=el('input',{type:'text',placeholder:'e.g. Read 10 pages','aria-label':'New task name',maxlength:'40'});
+  var tp=el('select',{'aria-label':'Task type'},[
+    el('option',{value:'check',text:'Done / not done'}),
+    el('option',{value:'hours',text:'Hours per day'})
+  ]);
+  var tg=el('input',{type:'number',min:'0.25',max:'24',step:'0.25',value:'1','aria-label':'Target hours'});
+  var add=el('div',{class:'card','data-sec':'add'},[
+    el('h2',{text:'Add your own task'}),
+    el('div',{class:'form'},[
+      el('div',{class:'full'},[nm]),
+      tp,tg,
+      el('button',{class:'btn primary full',text:'Add task',onclick:function(){
+        var name=nm.value.trim();if(!name)return;
+        var type=tp.value, target=Math.max(0.25,Number(tg.value)||1);
+        state.tasks.push({id:'t'+Date.now(),name:name,type:type,target:type==='check'?1:target});
+        rerender();
+      }})
+    ]),
+    el('p',{class:'mute',text:'The hours box is the daily target. It is ignored for done / not done tasks.'})
+  ]);
+  root.appendChild(add);
+
+  /* manage */
+  var mg=el('div',{class:'card','data-sec':'manage'},[el('h2',{text:'Manage tasks'})]);
+  state.tasks.forEach(function(t){
+    var right=el('div',{class:'row',style:'gap:6px'});
+    if(t.type==='hours'||t.type==='sleep'){
+      var ti=el('input',{type:'number',min:'0.25',max:'24',step:'0.25',value:String(t.target),'aria-label':t.name+' daily target in hours'});
+      ti.addEventListener('change',function(){t.target=Math.max(0.25,Number(ti.value)||1);rerender()});
+      right.appendChild(ti);right.appendChild(el('span',{class:'mute',text:'h'}));
+    }
+    right.appendChild(el('button',{class:'btn small',text:'Remove',onclick:function(){
+      if(btnArm!==t.id){btnArm=t.id;render();return}
+      state.tasks=state.tasks.filter(function(x){return x.id!==t.id});btnArm=null;rerender();
+    }}));
+    var label=btnArm===t.id?'Tap Remove again to confirm':t.name;
+    mg.appendChild(el('div',{class:'manage'},[el('span',{text:label}),right]));
+  });
+  root.appendChild(mg);
+  root.appendChild(backupCard());
+  root.appendChild(scheduleCard());
+}
+var btnArm=null;
+
+/* ---------- Prayer times for Satkhira (calculated, no internet needed) ---------- */
+var LAT=22.7185,LNG=89.0705,TZ=6;
+function dsin(d){return Math.sin(d*Math.PI/180)}
+function dcos(d){return Math.cos(d*Math.PI/180)}
+function dtan(d){return Math.tan(d*Math.PI/180)}
+function darcsin(x){return Math.asin(x)*180/Math.PI}
+function darccos(x){return Math.acos(x)*180/Math.PI}
+function darctan2(y,x){return Math.atan2(y,x)*180/Math.PI}
+function darccot(x){return Math.atan(1/x)*180/Math.PI}
+function fixn(a,b){a=a-b*Math.floor(a/b);return a<0?a+b:a}
+function julianD(y,m,d){if(m<=2){y-=1;m+=12}var A=Math.floor(y/100),B=2-A+Math.floor(A/4);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5}
+function prayerBase(dk){
+  var y=+dk.slice(0,4),m=+dk.slice(5,7),d=+dk.slice(8,10);
+  var jd=julianD(y,m,d)-LNG/360;
+  function sunPos(t){
+    var D=jd+t-2451545.0,g=fixn(357.529+0.98560028*D,360),q=fixn(280.459+0.98564736*D,360);
+    var L=fixn(q+1.915*dsin(g)+0.020*dsin(2*g),360),e=23.439-0.00000036*D;
+    var RA=darctan2(dcos(e)*dsin(L),dcos(L))/15;
+    return {decl:darcsin(dsin(e)*dsin(L)),eqt:q/15-fixn(RA,24)};
+  }
+  function mid(t){return fixn(12-sunPos(t).eqt,24)}
+  function ang(a,t,ccw){
+    var dec=sunPos(t).decl,noon=mid(t);
+    var v=darccos((-dsin(a)-dsin(dec)*dsin(LAT))/(dcos(dec)*dcos(LAT)))/15;
+    return noon+(ccw?-v:v);
+  }
+  function asr(f,t){var dec=sunPos(t).decl;return ang(-darccot(f+dtan(Math.abs(LAT-dec))),t,false)}
+  var res=[ang(18,5/24,true),mid(12/24),asr(2,13/24),ang(0.833,18/24,false),ang(18,21/24,false)];
+  return res.map(function(h){return Math.round(fixn(h+TZ-LNG/15,24)*60)});
+}
+var prC={k:'',v:null};
+function prayerMins(){var k=today();if(prC.k!==k)prC={k:k,v:prayerBase(k)};return prC.v}
+function minToS(m){m=((m%1440)+1440)%1440;return pad(Math.floor(m/60))+':'+pad(m%60)}
+function getSched(key){
+  var pa=state.prayerAuto,m=/^p([0-4])$/.exec(key);
+  if(m&&pa&&pa.on){var i=+m[1];return {s:minToS(prayerMins()[i]+(Number(pa.off&&pa.off[i])||0))}}
+  return state.sched[key]||{};
+}
+
+/* ---------- Schedule ---------- */
+function tmin(s){var m=/^(\d{1,2}):(\d{2})$/.exec(s||'');return m?(+m[1])*60+(+m[2]):null}
+function fmtT(s){var m=tmin(s);if(m===null)return '';var h=Math.floor(m/60);return (h%12||12)+':'+pad(m%60)+' '+(h<12?'AM':'PM')}
+function timeText(key){var r=getSched(key);if(!r||!r.s)return '';return fmtT(r.s)+(r.e?' \u2013 '+fmtT(r.e):'')}
+function schedItems(){
+  var items=[];
+  if(state.tasks.some(function(t){return t.type==='prayer'}))PRAYERS.forEach(function(n,i){items.push({key:'p'+i,name:n,prayer:true})});
+  state.tasks.forEach(function(t){if(t.type!=='prayer')items.push({key:t.id,name:t.name})});
+  items.forEach(function(x){var r=getSched(x.key);x.m=r?tmin(r.s):null});
+  items.sort(function(a,b){if(a.m===null&&b.m===null)return 0;if(a.m===null)return 1;if(b.m===null)return -1;return a.m-b.m});
+  return items;
+}
+function nextUp(){
+  var now=new Date(),nm=now.getHours()*60+now.getMinutes();
+  var list=schedItems().filter(function(x){return x.m!==null});
+  if(!list.length)return '';
+  var nx=null;for(var i=0;i<list.length;i++){if(list[i].m>=nm){nx=list[i];break}}
+  if(nx)return 'Next: '+nx.name+', '+fmtT(getSched(nx.key).s);
+  return 'Next: '+list[0].name+', '+fmtT(getSched(list[0].key).s)+' (tomorrow)';
+}
+function scheduleCard(){
+  var pa=state.prayerAuto,hasP=state.tasks.some(function(t){return t.type==='prayer'});
+  var card=el('div',{class:'card','data-sec':'schedule'},[
+    el('h2',{text:'Daily schedule'}),
+    el('p',{class:'mute',text:'Set a time for each task. Prayers have one time. Other tasks have a start and an end. The list is sorted by start time.'})
+  ]);
+  var al=el('input',{type:'checkbox',class:'chk','aria-label':'Ring an alarm when a task time starts'});
+  al.checked=!!state.alarm.on;
+  /* FIX: when the alarm is turned ON, ring right away for the task running now */
+  al.addEventListener('change',function(){
+    state.alarm.on=al.checked;
+    if(al.checked){getCtx();holdAwake();ringCurrent()}
+    else{releaseAwake();alerts=[];renderAlerts();stopRing()}
+    rerender();
+  });
+  card.appendChild(el('div',{class:'todo'},[al,el('span',{class:'t',text:'Ring an alarm when a task time starts'})]));
+  var aw=el('input',{type:'checkbox',class:'chk','aria-label':'Keep the screen on'});
+  aw.checked=state.alarm.awake!==false;
+  aw.addEventListener('change',function(){state.alarm.awake=aw.checked;if(aw.checked)holdAwake();else releaseAwake();rerender()});
+  card.appendChild(el('div',{class:'todo'},[aw,el('span',{class:'t',text:'Keep the screen on while this page is open (needed for the alarm)'})]));
+  var abtns=el('div',{style:'display:flex;gap:8px;flex-wrap:wrap;margin:8px 0'},[
+    el('button',{class:'btn small',text:'Test alarm',onclick:function(){getCtx();holdAwake();raiseAlert('Test alarm','If you hear the sound, the alarm works.')}})
+  ]);
+  if(typeof Notification!=='undefined'&&Notification.permission==='default'){
+    abtns.appendChild(el('button',{class:'btn small',text:'Allow notifications',onclick:function(){try{Notification.requestPermission().then(function(){rerender()})}catch(e){}}}));
+  }
+  var sndSel=el('select',{'aria-label':'Alarm sound'});
+  var sndList=[['beep','Beep'],['bell','Bell'],['chime','Chime'],['siren','Siren']];
+  if(customData)sndList.push(['custom','My own sound']);
+  sndList.forEach(function(o){var op=el('option',{value:o[0],text:o[1]});if(soundKind()===o[0])op.selected=true;sndSel.appendChild(op)});
+  sndSel.addEventListener('change',function(){state.alarm.sound=sndSel.value;save();getCtx();beepPattern()});
+  var sndMsg=el('div',{class:'mute',style:'margin:4px 0',text:sndNote||'Choose a sound. It plays once so you can hear it.'});
+  var sndFile=el('input',{type:'file',accept:'audio/*,.mp3,.m4a,.wav,.ogg,.aac','aria-label':'Choose your own alarm sound file'});
+  sndFile.addEventListener('change',function(){
+    var f=sndFile.files&&sndFile.files[0];if(!f)return;
+    if(f.size>30000000){sndMsg.textContent='File is too big (over 30 MB). Pick a smaller song.';return}
+    sndMsg.textContent='Preparing your song... please wait a few seconds.';
+    prepareSound(f,sndStart,sndLen,function(data,err){
+      if(!data){sndMsg.textContent=err;return}
+      customData=data;customBuf=null;
+      saveSound(data,function(ok){
+        if(!ok){sndMsg.textContent='Could not save in the browser. Try a shorter length.';return}
+        state.alarm.sound='custom';sndNote='Your song is saved and selected. Tap Test alarm to hear it.';
+        rerender();try{getCtx();beepPattern()}catch(e){}
+      });
+    });
+  });
+  card.appendChild(el('div',{class:'mute',text:'Alarm sound',style:'margin-top:8px'}));
+  card.appendChild(sndSel);
+  card.appendChild(el('div',{class:'mute',text:'Or use your own song or sound (any size, MP3 / M4A / WAV):',style:'margin-top:8px'}));
+  card.appendChild(trimBox());
+  card.appendChild(sndFile);
+  card.appendChild(sndMsg);
+  card.appendChild(abtns);
+  card.appendChild(el('div',{class:'mute','data-live':'alarm',style:'white-space:pre-line;margin:8px 0',text:alarmStatus()}));
+  card.appendChild(el('p',{class:'mute',text:'The alarm rings only while this page is open and the screen is on. It cannot ring when the page is closed or the phone is locked. Open this file in your normal browser (Chrome or Safari).'}));
+  if(hasP){
+    var ab=el('input',{type:'checkbox',class:'chk','aria-label':'Auto-update prayer times'});
+    ab.checked=!!pa.on;
+    ab.addEventListener('change',function(){pa.on=ab.checked;rerender()});
+    card.appendChild(el('div',{class:'todo'},[ab,el('span',{class:'t',text:'Auto-update prayer times for S\u0101tkhira every day'})]));
+    if(pa.on)card.appendChild(el('p',{class:'mute',text:'Calculated for S\u0101tkhira (Bangladesh time, Karachi method, Asr Hanafi). A mosque can differ by a few minutes. If your jamaat is later, type the minutes after the start time.'}));
+  }
+  schedItems().forEach(function(x){
+    var r=state.sched[x.key]||{};
+    var kids=[el('b',{text:x.name})];
+    var mk=function(f,label){
+      var i=el('input',{type:'time','aria-label':x.name+' '+label});
+      i.value=r[f]||'';
+      i.addEventListener('change',function(){var o=state.sched[x.key]||(state.sched[x.key]={});o[f]=i.value;if(state.alarmFired&&state.alarmFired.k)delete state.alarmFired.k[x.key];rerender()});
+      return i;
+    };
+    if(x.prayer&&pa.on){
+      var pi=Number(x.key.slice(1)),base=prayerMins()[pi];
+      var oi=el('input',{type:'number',min:'0',max:'300',step:'1',inputmode:'numeric','aria-label':x.name+' minutes after start',style:'width:72px'});
+      oi.value=Number(pa.off[pi])||0;
+      oi.addEventListener('change',function(){pa.off[pi]=Math.max(0,Math.min(300,Math.floor(Number(oi.value)||0)));if(state.alarmFired&&state.alarmFired.k)delete state.alarmFired.k[x.key];rerender()});
+      kids.push(el('span',{class:'mute',text:'Starts '+fmtT(minToS(base))+' +'}));
+      kids.push(oi);
+      kids.push(el('span',{class:'mute',text:'min = '+fmtT(getSched(x.key).s)}));
+    }else{
+      kids.push(mk('s',x.prayer?'time':'start'));
+      if(!x.prayer){kids.push(el('span',{class:'mute',text:'to'}));kids.push(mk('e','end'))}
+    }
+    card.appendChild(el('div',{class:'sched'},kids));
+  });
+  return card;
+}
+
+/* ---------- Alarm (rings while this page is open) ---------- */
+var alerts=[],ringT=null,ringN=0,actx=null,audEl=null,wl=null,lastCheck=0,baseTitle='';
+function getCtx(){
+  try{
+    var C=typeof AudioContext!=='undefined'?AudioContext:(typeof webkitAudioContext!=='undefined'?webkitAudioContext:null);
+    if(!C)return null;
+    if(!actx)actx=new C();
+    if(actx.state==='suspended'&&actx.resume)actx.resume();
+    return actx;
+  }catch(e){return null}
+}
+var sndCache={},customData='',customBuf=null;
+var sndNote='',lastSnd='not played yet';
+/* ----- sound storage: IndexedDB (big files) with localStorage fallback ----- */
+function idbOpen(cb){
+  try{
+    var q=indexedDB.open('daily_tracker_db',1);
+    q.onupgradeneeded=function(){q.result.createObjectStore('kv')};
+    q.onsuccess=function(){cb(q.result)};
+    q.onerror=function(){cb(null)};
+  }catch(e){cb(null)}
+}
+function saveSound(data,cb){
+  idbOpen(function(db){
+    function fallback(){try{localStorage.setItem('daily_tracker_sound',data);cb(true)}catch(e){cb(false)}}
+    if(!db){fallback();return}
+    try{
+      var tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(data,'sound');
+      tx.oncomplete=function(){cb(true)};
+      tx.onerror=function(){fallback()};tx.onabort=function(){fallback()};
+    }catch(e){fallback()}
+  });
+}
+function loadSound(){
+  idbOpen(function(db){
+    if(!db)return;
+    try{
+      var g=db.transaction('kv','readonly').objectStore('kv').get('sound');
+      g.onsuccess=function(){
+        var d=g.result;
+        if(d&&typeof d==='string'&&/^data:audio\//.test(d)&&(!customData||customData===BUILTIN_SOUND)){customData=d;customBuf=null;try{rerender()}catch(e){}}
+      };
+    }catch(e){}
+  });
+}
+/* BUILT-IN DEFAULT SOUND: add_sound.py puts your MP3 here, so the alarm uses it with no uploading */
+var BUILTIN_SOUND='';
+try{customData=localStorage.getItem('daily_tracker_sound')||''}catch(e){}
+if(!customData&&BUILTIN_SOUND)customData=BUILTIN_SOUND;
+loadSound();
+if(customData&&!/^data:audio\//.test(customData)){var cix=customData.indexOf(';');customData=cix>0?'data:audio/mpeg'+customData.slice(cix):''}
+function soundKind(){return (state.alarm&&state.alarm.sound)||(BUILTIN_SOUND?'custom':'beep')}
+function genSamples(kind,sr){
+  var n=Math.floor(sr*1.6),a=new Float32Array(n),i;
+  function tone(f,st,dur,vol,decay){
+    var s0=Math.floor(st*sr),e0=Math.min(n,Math.floor((st+dur)*sr));
+    for(var j=s0;j<e0;j++){var tt=(j-s0)/sr,env=Math.min(1,tt/0.01)*Math.exp(-tt*decay);a[j]+=Math.sin(2*Math.PI*f*tt)*vol*env}
+  }
+  if(kind==='bell'){[0,0.8].forEach(function(st){tone(660,st,0.8,0.5,4);tone(1320,st,0.8,0.25,6);tone(1980,st,0.8,0.12,8)})}
+  else if(kind==='chime'){[523,659,784].forEach(function(f,k){tone(f,k*0.45,0.5,0.55,5)})}
+  else if(kind==='siren'){var ph=0;for(i=0;i<n;i++){var f=800+300*Math.sin(2*Math.PI*1.25*(i/sr));ph+=2*Math.PI*f/sr;a[i]=Math.sin(ph)*0.5}}
+  else{[0,1,2].forEach(function(k){tone(k===2?1040:880,k*0.4,0.3,0.6,3)})}
+  for(i=0;i<n;i++)a[i]=Math.max(-1,Math.min(1,a[i]));
+  return a;
+}
+function makeWavFrom(a,sr){
+  var n=a.length,buf=new ArrayBuffer(44+n*2),v=new DataView(buf),i;
+  function w(o,t){for(var j=0;j<t.length;j++)v.setUint8(o+j,t.charCodeAt(j))}
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  for(i=0;i<n;i++)v.setInt16(44+i*2,Math.round(a[i]*32767),true);
+  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+}
+/* Big data: links often fail on phones, so turn the saved sound into a normal blob: link first */
+var blobCache={k:'',u:''};
+function dataBlobUrl(d){
+  if(!d)return '';
+  var key=d.length+d.slice(0,60)+d.slice(-60);
+  if(blobCache.k===key)return blobCache.u;
+  try{
+    var ix=d.indexOf(','),mime=(d.slice(5,ix).split(';')[0])||'audio/mpeg',bin=atob(d.slice(ix+1)),u=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    var url=URL.createObjectURL(new Blob([u],{type:mime}));
+    blobCache={k:key,u:url};return url;
+  }catch(e){return d}
+}
+/* If the saved sound cannot play, still ring with a normal Beep (through the audio system, not a file) */
+function fallbackBeep(msg){
+  try{
+    var c=getCtx();if(!c)return;
+    var go=function(){
+      var b=sndCache['beep'];
+      if(!b){var sm=genSamples('beep',22050);b=c.createBuffer(1,sm.length,22050);b.getChannelData(0).set(sm);sndCache['beep']=b}
+      playBuf(c,b,0);if(msg)lastSnd=msg;
+    };
+    if(c.state==='running')go();else if(c.resume)c.resume().then(go).catch(function(){});
+  }catch(e){}
+}
+function playWav(){
+  try{
+    var k=soundKind(),url,custom=(k==='custom'&&customData);
+    if(custom)url=dataBlobUrl(customData);
+    else{var kk=k==='custom'?'beep':k;url=sndCache['u'+kk]||(sndCache['u'+kk]=makeWavFrom(genSamples(kk,8000),8000))}
+    var au=new Audio(url);
+    var p=au.play();
+    if(p&&p.then)p.then(function(){lastSnd='played (file sound)'}).catch(function(e){
+      var n=e&&e.name?e.name:'unknown';
+      if(n==='NotAllowedError')lastSnd='BLOCKED by phone. Tap the page once, then tap Test alarm.';
+      else fallbackBeep((custom?'your saved sound cannot play on this phone ('+n+'). Played Beep instead. Pick your song again.':'this phone cannot play files ('+n+'). Played Beep instead.'));
+    });
+    if(custom)setTimeout(function(){try{au.pause()}catch(e){}},10000);
+  }catch(e){}
+}
+function playBuf(c,b,max){
+  var src=c.createBufferSource();src.buffer=b;src.connect(c.destination);src.start();lastSnd='played (audio system)';
+  if(max)try{src.stop(c.currentTime+max)}catch(e){}
+}
+function decodeCustom(c){
+  try{
+    var bin=atob(customData.split(',')[1]),u=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    var dp=c.decodeAudioData(u.buffer,function(b){customBuf=b},function(){});if(dp&&dp.catch)dp.catch(function(){});
+  }catch(e){}
+}
+function beepPattern(){
+  var c=getCtx(),k=soundKind();
+  if(!c){playWav();return}
+  if(c.state!=='running'){try{c.resume()}catch(e){}playWav();return}
+  try{
+    if(k==='custom'&&customData){
+      if(customBuf){playBuf(c,customBuf,10);return}
+      decodeCustom(c);playWav();return;
+    }
+    var kk=k==='custom'?'beep':k,b=sndCache[kk];
+    if(!b){var sm=genSamples(kk,22050);b=c.createBuffer(1,sm.length,22050);b.getChannelData(0).set(sm);sndCache[kk]=b}
+    playBuf(c,b,0);
+  }catch(e){playWav()}
+}
+function stopRing(){if(ringT){clearInterval(ringT);ringT=null}}
+function startRing(){
+  if(ringT)return;
+  ringN=0;beepPattern();
+  var cu=(soundKind()==='custom'&&customData),gap=cu?11000:3000,mx=cu?6:20;
+  ringT=setInterval(function(){ringN++;if(ringN>=mx||!alerts.length){stopRing();return}beepPattern()},gap);
+}
+function renderAlerts(){
+  var box=document.getElementById('alarmBox');if(!box)return;
+  box.textContent='';
+  box.className='alarmBox'+(alerts.length?' on':'');
+  alerts.forEach(function(a){
+    box.appendChild(el('div',{class:'alarm',role:'alert'},[
+      el('div',null,[el('b',{text:a.title}),a.detail?el('div',{class:'mute',text:a.detail}):null]),
+      el('button',{class:'btn primary small',text:'OK',onclick:function(){
+        alerts=alerts.filter(function(x){return x!==a});
+        renderAlerts();if(!alerts.length)stopRing();
+      }})
+    ]));
+  });
+  try{
+    if(alerts.length){if(!baseTitle)baseTitle=document.title||'Daily Tracker';document.title='\u23F0 '+alerts[0].title}
+    else if(baseTitle){document.title=baseTitle}
+  }catch(e){}
+}
+function raiseAlert(title,detail){
+  alerts.push({title:title,detail:detail||''});
+  renderAlerts();startRing();
+  try{if(typeof navigator!=='undefined'&&navigator.vibrate)navigator.vibrate([400,150,400,150,400])}catch(e){}
+  try{if(typeof Notification!=='undefined'&&Notification.permission==='granted')new Notification(title,{body:detail||''})}catch(e){}
+  try{if(typeof speechSynthesis!=='undefined'){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(title);u.volume=1;speechSynthesis.speak(u)}}catch(e){}
+}
+function checkAlarms(){
+  lastCheck=Date.now();
+  if(!state.alarm||!state.alarm.on)return;
+  var dk=today(),now=new Date(),nm=now.getHours()*60+now.getMinutes();
+  if(!state.alarmFired||state.alarmFired.d!==dk)state.alarmFired={d:dk,k:{}};
+  schedItems().forEach(function(x){
+    if(x.m===null||state.alarmFired.k[x.key])return;
+    var diff=nm-x.m;
+    /* FIX: wider window (10 min) so a task start is not missed */
+    if(diff>=0&&diff<=10){
+      state.alarmFired.k[x.key]=1;save();
+      raiseAlert('Time for '+x.name+(x.prayer?' prayer':''),timeText(x.key));
+    }
+  });
+}
+/* FIX: tasks whose time is running right now (start to end; prayers: first 20 min) */
+function activeNow(){
+  var n=new Date(),nm=n.getHours()*60+n.getMinutes();
+  return schedItems().filter(function(x){
+    if(x.m===null)return false;
+    var r=getSched(x.key),e=r.e?tmin(r.e):null;
+    if(x.prayer||e===null){var d=nm-x.m;return d>=0&&d<=20}
+    var d2=(nm-x.m+1440)%1440,len=(e-x.m+1440)%1440;
+    return len>0&&d2<len;
+  });
+}
+/* FIX: called when the alarm is switched ON: sound + alert for the current task */
+function ringCurrent(){
+  var dk=today();
+  if(!state.alarmFired||state.alarmFired.d!==dk)state.alarmFired={d:dk,k:{}};
+  var list=activeNow();
+  if(!list.length){raiseAlert('Alarm is ON','No task right now. '+nextAlarmText());return}
+  list.forEach(function(x){
+    state.alarmFired.k[x.key]=1;
+    raiseAlert('Now: '+x.name+(x.prayer?' prayer':''),timeText(x.key));
+  });
+  save();
+}
+function holdAwake(){
+  try{
+    if(wl||!state.alarm||!state.alarm.on||state.alarm.awake===false)return;
+    if(typeof navigator==='undefined'||!navigator.wakeLock)return;
+    navigator.wakeLock.request('screen').then(function(l){wl=l;l.addEventListener('release',function(){wl=null})}).catch(function(){});
+  }catch(e){}
+}
+function releaseAwake(){try{if(wl){wl.release();wl=null}}catch(e){}}
+function unlockAudio(){
+  var c=getCtx();
+  try{
+    if(c){var b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0)}
+  }catch(e){}
+  holdAwake();
+}
+function nextAlarmText(){
+  var now=new Date(),nm=now.getHours()*60+now.getMinutes(),best=null,tom=false;
+  var fired=(state.alarmFired&&state.alarmFired.d===today())?state.alarmFired.k:{};
+  var list=schedItems().filter(function(x){return x.m!==null});
+  list.forEach(function(x){if(x.m>=nm&&!fired[x.key]&&(!best||x.m<best.m))best=x});
+  if(!best&&list.length){best=list[0];tom=true}
+  if(!best)return 'Next alarm: no time is set';
+  var d=best.m-nm+(tom?1440:0);
+  return 'Next alarm: '+best.name+' at '+fmtT(getSched(best.key).s)+(tom?' tomorrow':'')+' (in '+(d<60?d+' min':Math.floor(d/60)+' h '+d%60+' min')+')';
+}
+function alarmStatus(){
+  var on=state.alarm&&state.alarm.on,now=new Date();
+  var ago=lastCheck?Math.round((Date.now()-lastCheck)/1000):-1;
+  return ['Alarm: '+(on?'ON':'OFF'),
+    'Phone time now: '+now.toLocaleTimeString(),
+    nextAlarmText(),
+    'Sound: '+(actx&&actx.state==='running'?'ready':'not allowed yet. Tap "Test alarm" once.'),
+    'Last sound: '+lastSnd,
+    'Screen stays on: '+(wl?'yes':'no'),
+    'Alarm check: '+(ago<0?'not yet':(ago<=15?'working ('+ago+' s ago)':'paused. Keep this page open and the screen on.'))].join('\n');
+}
+
+/* ---------- Backup ---------- */
+function markBackup(){try{localStorage.setItem(BK_KEY,new Date().toISOString())}catch(e){}}
+function backupNag(){
+  var last='';try{last=localStorage.getItem(BK_KEY)||''}catch(e){}
+  var old=last?(Date.now()-new Date(last).getTime())>7*86400000:Object.keys(state.logs).length>0;
+  if(!old)return null;
+  return el('div',{class:'card top'},[el('div',{class:'row'},[
+    el('span',{text:last?'No backup for more than 7 days.':'No backup yet. Your data is only in this browser.'}),
+    el('button',{class:'btn small primary',text:'Back up now',onclick:function(){tab='backup';btnArm=null;render()}})
+  ])]);
+}
+function backupCard(){
+  var last='';try{last=localStorage.getItem(BK_KEY)||''}catch(e){}
+  var msg=el('p',{class:'mute',text:last?'Last backup: '+new Date(last).toLocaleString():'No backup yet. Make one now.'});
+  var box=el('textarea',{rows:'4','aria-label':'Backup text',placeholder:'Backup text appears here. To restore, paste it here.'});
+  var pending=null;
+  var conf=el('button',{class:'btn primary',text:'Confirm: replace my data',style:'display:none;margin-top:8px'});
+  function payload(){return JSON.stringify({app:'daily-tracker',version:2,exported:new Date().toISOString(),state:state})}
+  function prepare(text){
+    var o;try{o=JSON.parse(text)}catch(e){msg.textContent='This is not a valid backup.';return}
+    var st=o&&o.state?o.state:o;
+    if(!st||!Array.isArray(st.tasks)||!st.logs||typeof st.logs!=='object'){msg.textContent='This is not a valid backup.';return}
+    pending=st;conf.style.display='';
+    msg.textContent='Backup found: '+Object.keys(st.logs).length+' days, '+st.tasks.length+' tasks. This will replace your current data. Tap the confirm button.';
+  }
+  conf.addEventListener('click',function(){
+    if(!pending)return;
+    state=pending;state.timer=null;pending=null;
+    ensureState();prune();btnArm=null;rerender();
+  });
+  var dl=el('button',{class:'btn primary',text:'Download backup file',onclick:function(){
+    try{
+      var blob=new Blob([payload()],{type:'application/json'});
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='daily-tracker-backup-'+today()+'.json';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+      markBackup();msg.textContent='Backup downloaded. Keep the file safe.';
+    }catch(e){msg.textContent='Download did not work. Use Copy backup text.'}
+  }});
+  var cp=el('button',{class:'btn',text:'Copy backup text',onclick:function(){
+    box.value=payload();box.select();markBackup();
+    try{navigator.clipboard.writeText(box.value).then(function(){msg.textContent='Copied. Paste it in a safe note.'},function(){msg.textContent='Select the text in the box and copy it.'})}
+    catch(e){msg.textContent='Select the text in the box and copy it.'}
+  }});
+  var fi=el('input',{type:'file',accept:'.json,application/json','aria-label':'Choose backup file'});
+  fi.addEventListener('change',function(){
+    var f=fi.files&&fi.files[0];if(!f)return;
+    var r=new FileReader();r.onload=function(){prepare(String(r.result))};r.readAsText(f);
+  });
+  var fromText=el('button',{class:'btn',text:'Restore from text box',onclick:function(){prepare(box.value)}});
+  return el('div',{class:'card','data-sec':'backup'},[
+    el('h2',{text:'Backup and restore'}),
+    el('p',{class:'mute',text:'Your data lives only in this browser. Make a backup every week.'}),
+    el('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},[dl,cp]),
+    msg,
+    el('div',{class:'mute',text:'Restore from a file:',style:'margin-top:6px'}),fi,
+    el('div',{class:'mute',text:'Or paste backup text:',style:'margin:10px 0 4px'}),box,
+    el('div',{style:'margin-top:8px'},[fromText]),conf
+  ]);
+}
+
+/* ---------- Weekly review ---------- */
+function weekKey(d){var x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()-((x.getDay()+1)%7));return keyOf(x)}
+function getRev(w){return state.reviews[w]||(state.reviews[w]={})}
+function reviewCard(){
+  var wk=weekKey(new Date()),r=state.reviews[wk]||{};
+  var span=Math.round((new Date(today()+'T12:00:00')-new Date(wk+'T12:00:00'))/86400000)+1,sum=0,i;
+  for(i=0;i<span;i++)sum+=dayScore(keyOf(daysAgo(i)));
+  var good=el('textarea',{rows:'3',placeholder:'What went well this week?','aria-label':'What went well this week',maxlength:'800'});
+  var fix=el('textarea',{rows:'3',placeholder:'What will I fix next week?','aria-label':'What will I fix next week',maxlength:'800'});
+  good.value=r.good||'';fix.value=r.fix||'';
+  good.addEventListener('input',function(){getRev(wk).good=good.value;save()});
+  fix.addEventListener('input',function(){getRev(wk).fix=fix.value;save()});
+  var card=el('div',{class:'card'},[
+    el('h2',{text:'Weekly review'}),
+    el('p',{class:'mute',text:'Week starting '+shortDay(wk)+'. Average so far: '+Math.round(sum/span*100)+'%. Write your review on Friday.'}),
+    el('div',{class:'mute',text:'What went well?',style:'margin:6px 0 4px'}),good,
+    el('div',{class:'mute',text:'What will I fix next week?',style:'margin:10px 0 4px'}),fix
+  ]);
+  var past=Object.keys(state.reviews).filter(function(k){var v=state.reviews[k];return k!==wk&&v&&(v.good||v.fix)}).sort().reverse().slice(0,12);
+  if(past.length){
+    card.appendChild(el('h2',{text:'Past reviews',style:'margin-top:16px'}));
+    past.forEach(function(k){
+      var v=state.reviews[k],det=el('details');
+      det.appendChild(el('summary',null,[el('span',{text:'Week of '+shortDay(k)})]));
+      if(v.good)det.appendChild(el('p',{class:'mute',text:'Went well: '+v.good,style:'white-space:pre-wrap'}));
+      if(v.fix)det.appendChild(el('p',{class:'mute',text:'Fix: '+v.fix,style:'white-space:pre-wrap'}));
+      card.appendChild(det);
+    });
+  }
+  return card;
+}
+
+/* ---------- To-do list and notes ---------- */
+function todos(k){var l=getLog(k);return l._todos||(l._todos=[])}
+function todoRow(it,onToggle,onDelete,extra){
+  var cb=el('input',{type:'checkbox',class:'chk','aria-label':'Mark done: '+it.text});
+  cb.checked=!!it.done;
+  cb.addEventListener('change',function(){onToggle(cb.checked)});
+  var kids=[cb,el('span',{class:'t',text:it.text})];
+  if(it.pri==='high')kids.push(el('span',{class:'hi',text:'High'}));
+  if(extra)kids.push(extra);
+  if(onDelete)kids.push(el('button',{class:'btn small','aria-label':'Delete '+it.text,text:'Delete',onclick:onDelete}));
+  return el('div',{class:'todo'+(it.done?' done':'')},kids);
+}
+function todoCard(root,k){
+  var list=todos(k);
+  var doneN=list.filter(function(x){return x.done}).length;
+  var card=el('div',{class:'card plan','data-sec':'todo'},[
+    el('div',{class:'row'},[el('h2',{text:'To-do for today',style:'margin:0'}),el('span',{class:'pill',text:doneN+' / '+list.length})])
+  ]);
+  if(!list.length)card.appendChild(el('p',{class:'mute',text:'Write what you need to do today. Add one task at a time.'}));
+  var order=list.slice().sort(function(a,b){return (a.done-b.done)||((b.pri==='high')-(a.pri==='high'))});
+  order.forEach(function(it){
+    card.appendChild(todoRow(it,function(v){it.done=v;rerender()},function(){
+      var l=todos(k);l.splice(l.indexOf(it),1);rerender();
+    }));
+  });
+  var inp=el('input',{type:'text',placeholder:'e.g. Finish the login page','aria-label':'New to-do',maxlength:'120'});
+  var pri=el('select',{'aria-label':'Priority'},[el('option',{value:'normal',text:'Normal'}),el('option',{value:'high',text:'High priority'})]);
+  function addIt(){
+    var t=inp.value.trim();if(!t)return;
+    todos(k).push({id:'d'+Date.now(),text:t,done:false,pri:pri.value});rerender();
+  }
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')addIt()});
+  card.appendChild(el('div',{class:'addrow'},[inp,el('button',{class:'btn primary',text:'Add',onclick:addIt}),pri]));
+  root.appendChild(card);
+
+  /* unfinished tasks from the last 7 days */
+  var carry=[];
+  for(var i=1;i<=7;i++){
+    var pk=keyOf(daysAgo(i)),pl=(state.logs[pk]||{})._todos||[];
+    pl.forEach(function(it){if(!it.done)carry.push({it:it,from:pk})});
+  }
+  if(carry.length){
+    var cc=el('div',{class:'card plan','data-sec':'carry'},[el('h2',{text:'Unfinished from earlier'})]);
+    carry.forEach(function(c){
+      cc.appendChild(todoRow(c.it,function(v){c.it.done=v;rerender()},null,el('button',{class:'btn small',text:'Move to today',onclick:function(){
+        var pl=state.logs[c.from]._todos;pl.splice(pl.indexOf(c.it),1);
+        todos(k).push({id:'d'+Date.now(),text:c.it.text,done:false,pri:c.it.pri});rerender();
+      }})));
+    });
+    root.appendChild(cc);
+  }
+
+  /* note */
+  var ta=el('textarea',{rows:'3',placeholder:'What did you study or build today? Anything to remember?','aria-label':'Note for today',maxlength:'1000'});
+  ta.value=getLog(k)._note||'';
+  ta.addEventListener('input',function(){getLog(k)._note=ta.value;save()});
+  root.appendChild(el('div',{class:'card plan','data-sec':'note'},[el('h2',{text:'Today\'s note'}),ta]));
+}
+
+/* ---------- Summaries ---------- */
+function chart(n,fmtLabel){
+  var wrap=el('div',{class:'chart'});
+  for(var i=n-1;i>=0;i--){
+    var d=daysAgo(i),k=keyOf(d),p=Math.round(dayScore(k)*100);
+    var b=el('b',{style:'height:'+Math.max(p,0)+'%',title:k+': '+p+'%'});
+    if(!p)b.className='z';
+    wrap.appendChild(el('div',null,[b,el('span',{text:fmtLabel(d,i,n)})]));
+  }
+  return wrap;
+}
+function taskSummary(n){
+  var box=el('div',{class:'card'},[el('h2',{text:'By task'})]);
+  state.tasks.forEach(function(t){
+    var tot=0,done=0;
+    for(var i=0;i<n;i++){var k=keyOf(daysAgo(i));tot+=val(k,t);if(pct(k,t)>=1)done++}
+    var txt;
+    if(t.type==='prayer')txt=tot+' of '+(n*5)+' prayers';
+    else if(t.type==='exercise')txt=tot+' of '+(n*5)+' exercises, '+done+'/'+n+' days complete';
+    else if(t.type==='cyber')txt=tot+' of '+(n*3)+' steps, '+done+'/'+n+' days complete';
+    else if(t.type==='sleep')txt=(Math.round(tot/n*10)/10)+' h average, '+done+'/'+n+' days on target';
+    else if(t.type==='hours'||t.type==='split')txt=(Math.round(tot*100)/100)+' h total, '+done+'/'+n+' days on target';
+    else txt=done+' of '+n+' days';
+    box.appendChild(el('div',{class:'sum'},[el('span',{text:t.name}),el('span',{class:'mute',text:txt})]));
+  });
+  return box;
+}
+function avg(n){var s=0;for(var i=0;i<n;i++)s+=dayScore(keyOf(daysAgo(i)));return Math.round(s/n*100)}
+var DOW=['Su','Mo','Tu','We','Th','Fr','Sa'];
+function viewWeek(root){
+  root.appendChild(el('div',{class:'card'},[
+    el('h2',{text:'Last 7 days'}),
+    el('div',{class:'row'},[el('span',{class:'mute',text:'Average completion'}),el('span',{class:'score',style:'font-size:28px',text:avg(7)+'%'})]),
+    chart(7,function(d){return DOW[d.getDay()]})
+  ]));
+  root.appendChild(taskSummary(7));
+  root.appendChild(reviewCard());
+}
+function heat(n){
+  var h=el('div',{class:'heat'});
+  for(var i=n-1;i>=0;i--){
+    var k=keyOf(daysAgo(i)),p=dayScore(k);
+    var c=el('i',{title:k+': '+Math.round(p*100)+'%'});
+    if(p>0)c.style.cssText='background:var(--acc);opacity:'+(0.2+0.8*p);
+    h.appendChild(c);
+  }
+  return h;
+}
+function viewMonth(root){
+  root.appendChild(el('div',{class:'card'},[
+    el('h2',{text:'Last 30 days'}),
+    el('div',{class:'row'},[el('span',{class:'mute',text:'Average completion'}),el('span',{class:'score',style:'font-size:28px',text:avg(30)+'%'})]),
+    chart(30,function(d,i,n){return (i%5===0)?String(d.getDate()):''})
+  ]));
+  root.appendChild(taskSummary(30));
+}
+function viewHistory(root){
+  root.appendChild(el('div',{class:'card'},[
+    el('h2',{text:'Last 365 days'}),
+    el('p',{class:'mute',text:'Darker squares mean more of that day was completed. Older days are removed automatically.'}),
+    heat(KEEP)
+  ]));
+  var list=el('div',{class:'card'},[el('h2',{text:'Day by day'})]);
+  var any=false;
+  for(var i=0;i<KEEP;i++){
+    var d=daysAgo(i),k=keyOf(d);
+    if(!state.logs[k])continue;
+    any=true;
+    var det=el('details');
+    var s=el('summary',null,[
+      el('span',{text:d.toDateString()}),
+      el('span',{class:'pill',text:Math.round(dayScore(k)*100)+'%'})
+    ]);
+    det.appendChild(s);
+    state.tasks.forEach(function(t){
+      det.appendChild(el('div',{class:'sum mute'},[el('span',{text:t.name}),el('span',{text:fmtVal(t,val(k,t))})]));
+    });
+    var hl=state.logs[k]||{};
+    if(hl._ex){
+      var parts=[];
+      EXERCISES.forEach(function(n,i){if(Number(hl._ex[i])>0)parts.push(n+' '+hl._ex[i]+' '+EX_UNITS[i]+(Number(hl._ex[i])>=EX_TARGETS[i]?' \u2713':''))});
+      if(parts.length)det.appendChild(el('p',{class:'mute',text:'Exercise: '+parts.join(', ')}));
+    }
+    (hl._todos||[]).forEach(function(it){
+      det.appendChild(el('div',{class:'sum'},[el('span',{text:(it.done?'\u2713 ':'\u25CB ')+it.text}),el('span',{class:'mute',text:it.done?'Done':'Not done'})]));
+    });
+    if(hl._note)det.appendChild(el('p',{class:'mute',text:'Note: '+hl._note,style:'white-space:pre-wrap'}));
+    list.appendChild(det);
+  }
+  if(!any)list.appendChild(el('p',{class:'mute',text:'No history yet. Mark something on the Today tab to start.'}));
+  root.appendChild(list);
+}
+
+/* ---------- Best day (all tasks together) ---------- */
+function dayLabel(k){return new Date(k+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+function shortDay(k){return new Date(k+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}
+function rankedDays(){
+  var arr=[];
+  Object.keys(state.logs).forEach(function(k){var sc=dayScore(k);if(sc>0)arr.push({k:k,sc:sc})});
+  arr.sort(function(a,b){return (b.sc-a.sc)||(a.k<b.k?1:-1)});
+  return arr;
+}
+function viewBest(root){
+  var list=rankedDays();
+  if(!list.length){
+    root.appendChild(el('div',{class:'card top'},[el('h2',{text:'Your best day'}),el('p',{class:'mute',text:'No data yet. Mark prayers, coding, study and exercise on the Today tab. Your best day will show here.'})]));
+    return;
+  }
+  var k=list[0].k,pc=Math.round(list[0].sc*100);
+  var c=el('div',{class:'card top'},[
+    el('h2',{text:'Your best day (all tasks together)'}),
+    el('div',{class:'row'},[
+      el('div',null,[el('div',{class:'mute',text:dayLabel(k)}),el('div',{class:'score',text:pc+'%'})]),
+      el('div',{class:'mute',text:k===today()?'Today!':''})
+    ]),
+    el('div',{class:'bar'},[el('i',{style:'width:'+pc+'%'})])
+  ]);
+  state.tasks.forEach(function(t){
+    c.appendChild(el('div',{class:'sum'},[el('span',{text:t.name}),el('span',{class:'pill',text:fmtVal(t,val(k,t))})]));
+  });
+  var hl=state.logs[k]||{};
+  if(hl._ex){
+    var parts=[];
+    EXERCISES.forEach(function(n,i){if(Number(hl._ex[i])>0)parts.push(n+' '+hl._ex[i]+' '+EX_UNITS[i])});
+    if(parts.length)c.appendChild(el('p',{class:'mute',text:'Exercise: '+parts.join(', ')}));
+  }
+  var td=hl._todos||[];
+  if(td.length)c.appendChild(el('p',{class:'mute',text:'To-do done: '+td.filter(function(x){return x.done}).length+' of '+td.length}));
+  root.appendChild(c);
+
+  var top5=el('div',{class:'card'},[el('h2',{text:'Top 5 days'})]);
+  list.slice(0,5).forEach(function(d,i){
+    top5.appendChild(el('div',{class:'sum'},[el('span',{text:(i+1)+'. '+shortDay(d.k)}),el('span',{class:'pill',text:Math.round(d.sc*100)+'%'})]));
+  });
+  root.appendChild(top5);
+
+  var per=el('div',{class:'card'},[el('h2',{text:'Best day for each task'})]);
+  state.tasks.forEach(function(t){
+    var best=0,bk='';
+    Object.keys(state.logs).forEach(function(d){
+      var v=val(d,t);
+      if(v>0&&(v>best||(v===best&&d>bk))){best=v;bk=d}
+    });
+    per.appendChild(el('div',{class:'sum'},[
+      el('span',{text:t.name}),
+      el('span',{class:'mute',text:best?fmtVal(t,best)+' on '+shortDay(bk):'No record yet'})
+    ]));
+  });
+  root.appendChild(per);
+}
+
+/* ---------- shell ---------- */
+function bestCard(k){
+  var t=state.tasks.filter(function(x){return x.type==='exercise'})[0];
+  if(!t)return null;
+  var grid=el('div',{class:'recs'}),any=false;
+  EXERCISES.forEach(function(n,i){
+    var best=0,bk='';
+    Object.keys(state.logs).forEach(function(d){
+      var e=state.logs[d]._ex,v=(e&&Number(e[i]))||0;
+      if(v>0&&(v>best||(v===best&&d>bk))){best=v;bk=d}
+    });
+    var e0=(state.logs[k]||{})._ex,tv=(e0&&Number(e0[i]))||0;
+    if(best>0)any=true;
+    var when=bk?new Date(bk+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'No record yet';
+    var note=(bk===k&&best>0)?'New record today!':'Today: '+tv+' '+EX_UNITS[i];
+    grid.appendChild(el('div',{class:'rec'},[
+      el('div',{class:'mute',text:n}),
+      el('b',{text:best?best+' '+EX_UNITS[i]:'-'}),
+      el('div',{class:'mute',text:when}),
+      el('div',{class:'mute',text:note}),
+      el('div',{class:'mute',text:'Goal: '+goalText(i)})
+    ]));
+  });
+  var card=el('div',{class:'card top'},[el('h2',{text:'Best exercise days (last 365 days)'}),grid]);
+  if(!any)card.appendChild(el('p',{class:'mute',text:'Write how much you did in the boxes under Exercise. Your best day for each exercise will show here.'}));
+  return card;
+}
+function bestDayCard(k){
+  var list=rankedDays(),c=el('div',{class:'card top'});
+  c.appendChild(el('div',{class:'mute',text:'Best day (all tasks)'}));
+  if(!list.length){c.appendChild(el('p',{class:'mute',text:'No data yet. Mark something to start.'}));return c}
+  var bk=list[0].k,pc=Math.round(list[0].sc*100),tp=Math.round(dayScore(k)*100);
+  c.appendChild(el('div',{class:'row'},[
+    el('div',{class:'score',style:'font-size:32px',text:pc+'%'}),
+    el('div',{class:'mute',style:'text-align:right',text:bk===k?'Today is your best day!':shortDay(bk)})
+  ]));
+  c.appendChild(el('div',{class:'bar'},[el('i',{style:'width:'+pc+'%'})]));
+  c.appendChild(el('div',{class:'mute',text:bk===k?'Keep going!':'Today '+tp+'%, '+Math.max(0,pc-tp)+'% to beat it'}));
+  return c;
+}
+function splitCard(k){
+  var box=el('div',{class:'split'});
+  state.tasks.filter(function(t){return t.type==='prayer'||t.type==='exercise'}).forEach(function(t){
+    var v=val(k,t),p=Math.round(pct(k,t)*100);
+    box.appendChild(el('div',null,[
+      el('div',{class:'mute',text:(t.type==='prayer'?'Namaz':'Exercise')+' today'}),
+      el('div',{class:'score',style:'font-size:32px',text:v+' / 5'}),
+      el('div',{class:'bar'},[el('i',{style:'width:'+p+'%'})]),
+      el('div',{class:'mute',text:p+'% done'})
+    ]));
+  });
+  return el('div',{class:'card top'},[box]);
+}
+var TABS=[['today','Today'],['pomo','Pomodoro'],['schedule','Schedule'],['note','Note'],['week','Week'],['month','Month'],['best','Best'],['history','History'],['add','Add task'],['manage','Manage'],['backup','Backup']];
+var HEADER_SECS={schedule:1,note:1,add:1,manage:1,backup:1};
+function viewSec(root,sec){
+  var tmp=document.createElement('div');
+  viewToday(tmp);
+  Array.prototype.slice.call(tmp.children).forEach(function(c){
+    if(c.getAttribute&&c.getAttribute('data-sec')===sec){c.className+=' top';root.appendChild(c)}
+  });
+}
+
+
+/* ---------- Any song: cut a part of it and make it small (works for big files) ---------- */
+var sndStart=0,sndLen=30;
+function trimBox(){
+  function mk(label,get,set,min,max){
+    var i=el('input',{type:'number',min:String(min),max:String(max),step:'1','aria-label':label,style:'width:70px;height:34px;font-size:16px'});
+    i.value=get();
+    i.addEventListener('change',function(){var v=Math.floor(Number(i.value));if(!(v>=min))v=min;if(v>max)v=max;set(v);i.value=v});
+    return el('label',{class:'mute',style:'display:inline-flex;align-items:center;gap:6px;margin-right:12px'},[el('span',{text:label}),i]);
+  }
+  return el('div',{style:'margin:6px 0'},[
+    el('div',{class:'mute',text:'A long song is cut to a short part so it fits. Choose which part:'}),
+    mk('Start at (sec)',function(){return sndStart},function(v){sndStart=v},0,3600),
+    mk('Length (sec, max 60)',function(){return sndLen},function(v){sndLen=Math.max(1,v)},1,60)
+  ]);
+}
+function toB64(bytes){var s='',i,n=bytes.length;for(i=0;i<n;i+=8192)s+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(n,i+8192)));return btoa(s)}
+function prepareSound(file,start,len,cb){
+  var AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC){cb(null,'This browser cannot process audio. Use Chrome or Safari.');return}
+  var r=new FileReader();
+  r.onerror=function(){cb(null,'Could not read this file. Try another one.')};
+  r.onload=function(){
+    var ctx;try{ctx=new AC()}catch(e){cb(null,'This browser cannot process audio.');return}
+    var fin=false;
+    function fail(){if(fin)return;fin=true;try{ctx.close()}catch(e){}cb(null,'This phone cannot read this audio file. Please use an MP3, M4A or WAV file.')}
+    function ok(buf){
+      if(fin)return;fin=true;
+      try{
+        var sr=buf.sampleRate,nch=buf.numberOfChannels,total=buf.length,i,c;
+        var s0=Math.min(Math.floor(start*sr),Math.max(0,total-1)),s1=Math.min(total,s0+Math.floor(len*sr));
+        if(s1-s0<sr/10){cb(null,'The start time is after the end of the song. Use a smaller start number.');return}
+        var OUT=22050,ratio=sr/OUT,n=Math.floor((s1-s0)/ratio),out=new Float32Array(n),chs=[];
+        for(c=0;c<nch;c++)chs.push(buf.getChannelData(c));
+        for(i=0;i<n;i++){
+          var a=s0+Math.floor(i*ratio),b=Math.min(s1,s0+Math.floor((i+1)*ratio)),sum=0,cnt=0,j;
+          if(b<=a)b=a+1;
+          for(j=a;j<b&&j<total;j++){for(c=0;c<nch;c++)sum+=chs[c][j];cnt+=nch}
+          out[i]=cnt?sum/cnt:0;
+        }
+        var fade=Math.min(n,Math.floor(OUT*0.05));
+        for(i=0;i<fade;i++)out[n-1-i]*=i/fade;
+        var bytes=new Uint8Array(44+n*2),v=new DataView(bytes.buffer);
+        function w(o,t){for(var q=0;q<t.length;q++)v.setUint8(o+q,t.charCodeAt(q))}
+        w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+        v.setUint32(24,OUT,true);v.setUint32(28,OUT*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+        for(i=0;i<n;i++)v.setInt16(44+i*2,Math.round(Math.max(-1,Math.min(1,out[i]))*32767),true);
+        try{ctx.close()}catch(e){}
+        cb('data:audio/wav;base64,'+toB64(bytes));
+      }catch(e){cb(null,'Could not prepare this file. Try a shorter length.')}
+    }
+    try{var pr=ctx.decodeAudioData(r.result,ok,fail);if(pr&&pr.catch)pr.catch(fail)}catch(e){fail()}
+  };
+  r.readAsArrayBuffer(file);
+}
+/* ---------- Pomodoro timer (own sound from PC or phone) ---------- */
+var pomoR={phase:'work',left:0,endAt:0,running:false,n:0},pomoData='',pomoAu=null,pomoNote='',pomoStopT=null,pomoOrigTitle=null;
+function kvSave(key,data,cb){
+  idbOpen(function(db){
+    function fb(){try{localStorage.setItem('daily_tracker_'+key,data);cb(true)}catch(e){cb(false)}}
+    if(!db){fb();return}
+    try{var tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(data,key);tx.oncomplete=function(){cb(true)};tx.onerror=fb;tx.onabort=fb}catch(e){fb()}
+  });
+}
+function kvLoad(key,cb){
+  var ls='';try{ls=localStorage.getItem('daily_tracker_'+key)||''}catch(e){}
+  idbOpen(function(db){
+    if(!db){cb(ls);return}
+    try{var g=db.transaction('kv','readonly').objectStore('kv').get(key);g.onsuccess=function(){cb(typeof g.result==='string'&&g.result?g.result:ls)};g.onerror=function(){cb(ls)}}catch(e){cb(ls)}
+  });
+}
+function kvDelete(key){
+  try{localStorage.removeItem('daily_tracker_'+key)}catch(e){}
+  idbOpen(function(db){if(!db)return;try{db.transaction('kv','readwrite').objectStore('kv').delete(key)}catch(e){}});
+}
+function loadPomoSound(){
+  kvLoad('pomo_sound',function(d){
+    if(d&&/^data:audio\//.test(d)){pomoData=d;try{if(tab==='pomo'&&!pomoR.running)render()}catch(e){}}
+  });
+}
+function pomoCfg(){
+  var p=state.pomo;if(!p||typeof p!=='object')p=state.pomo={};
+  if(!(p.work>0))p.work=25;if(!(p.brk>0))p.brk=5;if(!(p.lng>0))p.lng=15;if(!(p.every>0))p.every=4;
+  if(!p.sound)p.sound='bell';
+  if(!p.log||typeof p.log!=='object')p.log={};
+  return p;
+}
+function pomoLen(ph){var c=pomoCfg();return Math.round((ph==='work'?c.work:ph==='long'?c.lng:c.brk)*60)}
+function pomoLeft(){return pomoR.running?Math.max(0,Math.ceil((pomoR.endAt-Date.now())/1000)):pomoR.left}
+function pomoFmt(sec){var m=Math.floor(sec/60),r=sec%60;return (m<10?'0':'')+m+':'+(r<10?'0':'')+r}
+function pomoName(ph){return ph==='work'?'Focus time':ph==='long'?'Long break':'Short break'}
+function pomoUrl(){
+  var c=pomoCfg();
+  if(c.sound==='custom'&&pomoData)return dataBlobUrl(pomoData);
+  var kk=(c.sound==='custom'||!c.sound)?'beep':c.sound;
+  return sndCache['u'+kk]||(sndCache['u'+kk]=makeWavFrom(genSamples(kk,8000),8000));
+}
+function pomoSetSrc(au){var u=pomoUrl();if(au.getAttribute('src')!==u)au.src=u}
+/* phones only allow sound after a tap, so "warm up" the player silently when Start is tapped */
+function primePomo(){
+  try{
+    if(!pomoAu)pomoAu=new Audio();
+    pomoSetSrc(pomoAu);pomoAu.muted=true;
+    var stop=function(){try{pomoAu.pause();pomoAu.currentTime=0}catch(e){}pomoAu.muted=false};
+    var p=pomoAu.play();
+    if(p&&p.then)p.then(stop).catch(function(){pomoAu.muted=false});else stop();
+  }catch(e){}
+}
+function playPomo(){
+  try{
+    if(!pomoAu)pomoAu=new Audio();
+    var au=pomoAu,c=pomoCfg(),custom=(c.sound==='custom'&&pomoData),reps=custom?1:3,k=0;
+    clearTimeout(pomoStopT);
+    au.muted=false;pomoSetSrc(au);au.currentTime=0;
+    au.onended=function(){k++;if(k<reps){try{au.currentTime=0;au.play().catch(function(){})}catch(e){}}};
+    var p=au.play();
+    if(p&&p.catch)p.catch(function(e){
+      var n=e&&e.name?e.name:'unknown';
+      if(n==='NotAllowedError')pomoNote='The phone blocked the sound. Tap Start or Test sound once, then try again.';
+      else{pomoNote='This phone cannot play your saved sound ('+n+'). Played Beep instead. Please pick your song again.';fallbackBeep()}
+      try{if(tab==='pomo')render()}catch(e2){}
+    });
+    if(custom)pomoStopT=setTimeout(function(){try{au.pause()}catch(e){}},15000);
+  }catch(e){}
+}
+function pomoPaint(){
+  var left=pomoLeft(),tot=pomoLen(pomoR.phase)||1;
+  var t=document.querySelector('[data-pomo="time"]');if(t)t.textContent=pomoFmt(left);
+  var ph=document.querySelector('[data-pomo="phase"]');if(ph)ph.textContent=pomoName(pomoR.phase)+(pomoR.running?' - running':' - ready');
+  var b=document.querySelector('[data-pomo="bar"]');if(b)b.style.width=Math.max(0,Math.min(100,(tot-left)/tot*100))+'%';
+  try{
+    if(pomoR.running){if(pomoOrigTitle===null)pomoOrigTitle=document.title;document.title=pomoFmt(left)+' - '+pomoName(pomoR.phase)}
+    else if(pomoOrigTitle!==null){document.title=pomoOrigTitle;pomoOrigTitle=null}
+  }catch(e){}
+}
+function pomoStart(){
+  primePomo();getCtx();holdAwake();
+  if(pomoR.left<=0)pomoR.left=pomoLen(pomoR.phase);
+  pomoR.endAt=Date.now()+pomoR.left*1000;pomoR.running=true;pomoNote='';
+  render();pomoPaint();
+}
+function pomoPause(){pomoR.left=pomoLeft();pomoR.running=false;render();pomoPaint()}
+function pomoReset(){pomoR.running=false;pomoR.left=pomoLen(pomoR.phase);render();pomoPaint()}
+function pomoSkip(){
+  pomoR.running=false;
+  if(pomoR.phase==='work'){pomoR.phase=((pomoR.n+1)%pomoCfg().every===0)?'long':'break';pomoR.n++}else pomoR.phase='work';
+  pomoR.left=pomoLen(pomoR.phase);render();pomoPaint();
+}
+function pomoDone(){
+  var was=pomoR.phase,c=pomoCfg();
+  pomoR.running=false;
+  if(was==='work'){pomoR.n++;var k=today();c.log[k]=(c.log[k]||0)+1;pomoR.phase=(pomoR.n%c.every===0)?'long':'break'}
+  else pomoR.phase='work';
+  pomoR.left=pomoLen(pomoR.phase);
+  playPomo();
+  try{if(navigator.vibrate)navigator.vibrate([300,150,300])}catch(e){}
+  try{if(typeof Notification!=='undefined'&&Notification.permission==='granted')new Notification(was==='work'?'Focus session done':'Break is over',{body:'Next: '+pomoName(pomoR.phase)})}catch(e){}
+  pomoNote=(was==='work'?'Focus session done! ':'Break is over! ')+'Next: '+pomoName(pomoR.phase)+'.';
+  save();
+  if(c.auto){pomoR.endAt=Date.now()+pomoR.left*1000;pomoR.running=true}
+  try{render()}catch(e){}
+  pomoPaint();
+}
+function pomoTickFn(){
+  if(pomoR.running){
+    if(pomoLeft()<=0)pomoDone();else pomoPaint();
+  }
+}
+function viewPomo(root){
+  var c=pomoCfg();
+  if(!pomoR.left&&!pomoR.running)pomoR.left=pomoLen(pomoR.phase);
+  var card=el('div',{class:'card top'});
+  card.appendChild(el('h2',{text:'Pomodoro timer'}));
+  card.appendChild(el('div',{class:'mute','data-pomo':'phase',style:'text-align:center;font-size:16px',text:''}));
+  card.appendChild(el('div',{class:'score','data-pomo':'time',style:'font-size:68px;text-align:center;margin:6px 0',text:''}));
+  card.appendChild(el('div',{class:'bar'},[el('i',{'data-pomo':'bar',style:'width:0%'})]));
+  var row=el('div',{class:'row',style:'justify-content:center;gap:8px;margin:12px 0;flex-wrap:wrap'},[
+    pomoR.running?el('button',{class:'btn primary',text:'Pause',onclick:pomoPause}):el('button',{class:'btn primary',text:'Start',onclick:pomoStart}),
+    el('button',{class:'btn',text:'Reset',onclick:pomoReset}),
+    el('button',{class:'btn',text:'Skip',onclick:pomoSkip})
+  ]);
+  card.appendChild(row);
+  if(pomoNote)card.appendChild(el('div',{class:'mute',style:'text-align:center;margin:4px 0',text:pomoNote}));
+  card.appendChild(el('div',{class:'mute',style:'text-align:center',text:'Focus sessions done today: '+(c.log[today()]||0)}));
+
+  card.appendChild(el('h2',{text:'Settings',style:'margin-top:18px'}));
+  function num(label,key,min,max){
+    var i=el('input',{type:'number',min:String(min),max:String(max),step:'1','aria-label':label,style:'width:80px;height:36px;font-size:16px'});
+    i.value=c[key];
+    i.addEventListener('change',function(){
+      var v=Math.floor(Number(i.value));if(!(v>=min))v=min;if(v>max)v=max;
+      c[key]=v;if(!pomoR.running)pomoR.left=pomoLen(pomoR.phase);rerender();
+    });
+    return el('div',{class:'row',style:'justify-content:space-between;align-items:center;margin:6px 0'},[el('span',{class:'t',text:label}),i]);
+  }
+  card.appendChild(num('Focus (minutes)','work',1,180));
+  card.appendChild(num('Short break (minutes)','brk',1,60));
+  card.appendChild(num('Long break (minutes)','lng',1,120));
+  card.appendChild(num('Focus sessions before a long break','every',2,12));
+  var au=el('input',{type:'checkbox',class:'chk','aria-label':'Start the next round automatically'});
+  au.checked=!!c.auto;au.addEventListener('change',function(){c.auto=au.checked;save()});
+  card.appendChild(el('div',{class:'todo'},[au,el('span',{class:'t',text:'Start the next round automatically'})]));
+
+  card.appendChild(el('h2',{text:'Sound',style:'margin-top:18px'}));
+  var sel=el('select',{'aria-label':'Pomodoro sound'});
+  var list=[['beep','Beep'],['bell','Bell'],['chime','Chime'],['siren','Siren']];
+  if(pomoData)list.push(['custom','My own sound']);
+  list.forEach(function(o){var op=el('option',{value:o[0],text:o[1]});if(c.sound===o[0])op.selected=true;sel.appendChild(op)});
+  sel.addEventListener('change',function(){c.sound=sel.value;save();primePomo();playPomo()});
+  var msg=el('div',{class:'mute',style:'margin:4px 0',text:pomoData?'Your own sound is saved. Pick it in the list above.':'Choose a sound, or add your own from this PC or phone.'});
+  var f=el('input',{type:'file',accept:'audio/*,.mp3,.m4a,.wav,.ogg,.aac','aria-label':'Choose your own Pomodoro sound'});
+  f.addEventListener('change',function(){
+    var file=f.files&&f.files[0];if(!file)return;
+    if(file.size>30000000){msg.textContent='File is too big (over 30 MB). Pick a smaller song.';return}
+    msg.textContent='Preparing your song... please wait a few seconds.';
+    prepareSound(file,sndStart,sndLen,function(d,err){
+      if(!d){msg.textContent=err;return}
+      kvSave('pomo_sound',d,function(ok){
+        if(!ok){msg.textContent='Could not save in the browser. Try a shorter length.';return}
+        pomoData=d;c.sound='custom';pomoNote='';save();
+        render();primePomo();playPomo();
+      });
+    });
+  });
+  card.appendChild(sel);
+  card.appendChild(el('div',{class:'mute',text:'Or use your own song or sound (any size, MP3 / M4A / WAV):',style:'margin-top:8px'}));
+  card.appendChild(trimBox());
+  card.appendChild(f);
+  card.appendChild(msg);
+  var br=el('div',{class:'row',style:'gap:8px;flex-wrap:wrap;margin-top:6px'},[
+    el('button',{class:'btn small',text:'Test sound',onclick:function(){primePomo();playPomo()}})
+  ]);
+  if(pomoData)br.appendChild(el('button',{class:'btn small',text:'Remove my sound',onclick:function(){
+    kvDelete('pomo_sound');pomoData='';if(c.sound==='custom')c.sound='bell';pomoAu=null;save();render();
+  }}));
+  card.appendChild(br);
+  card.appendChild(el('p',{class:'mute',text:'The sound rings only while this page is open. Keep the page open and the screen on while the timer runs.'}));
+  root.appendChild(card);
+  pomoPaint();
+}
+function render(){
+  document.getElementById('dateLine').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var nav=document.getElementById('tabs');nav.textContent='';
+  TABS.forEach(function(t){
+    nav.appendChild(el('button',{role:'tab','aria-selected':tab===t[0]?'true':'false',text:t[1],onclick:function(){tab=t[0];btnArm=null;render()}}));
+  });
+  var selBtn=nav.querySelector('[aria-selected="true"]');if(selBtn&&selBtn.scrollIntoView)selBtn.scrollIntoView({inline:'nearest',block:'nearest'});
+  var root=document.getElementById('view');root.textContent='';
+  if(tab==='today'){viewToday(root);sidebarify(root);}
+  else if(tab==='pomo')viewPomo(root);
+  else if(HEADER_SECS[tab])viewSec(root,tab);
+  else if(tab==='week')viewWeek(root);
+  else if(tab==='month')viewMonth(root);
+  else if(tab==='best')viewBest(root);
+  else viewHistory(root);
+}
+setInterval(function(){
+  var bs=document.querySelectorAll('[data-t0]');
+  for(var i=0;i<bs.length;i++)bs[i].textContent='\u25A0 Stop '+hms(Date.now()-Number(bs[i].getAttribute('data-t0')));
+  var ls=document.querySelectorAll('[data-live]');
+  for(var j=0;j<ls.length;j++)ls[j].textContent=alarmStatus();
+},1000);
+if(typeof document.addEventListener==='function'){document.addEventListener('click',unlockAudio,{once:true});document.addEventListener('touchstart',unlockAudio,{once:true});document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){holdAwake();checkAlarms()}})}
+setInterval(checkAlarms,5000);
+load();render();checkAlarms();loadPomoSound();setInterval(pomoTickFn,500);
+})();
+</script>
+</body>
+</html>
